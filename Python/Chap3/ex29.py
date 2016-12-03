@@ -1,0 +1,47 @@
+from urllib.request import urlopen
+import urllib.parse
+import json
+import sys
+import re
+from ex28 import get_infobox
+
+# 29. Lấy ra các URL của quốc kỳ
+# Sử dụng nội dung của các template và lấy ra URl đến quốc kỳ (国旗画像のURL).
+# Hint: Gọi API [imageinfo](https://www.mediawiki.org/wiki/API:Properties) của 
+# [MediaWWiki](https://www.mediawiki.org/wiki/API:Main_page), biến đổi các file references thành URL.
+# Tham khảo cách lấy nội dung của trang Web
+# HOWTO Fetch Internet Resources Using urllib2: https://docs.python.org/2.7/howto/urllib2.htmlex
+
+def image_url(image_name):
+    data = {}
+    data['action'] = 'query'
+    data['titles'] = image_name
+    data['prop'] = 'imageinfo'
+    data['format'] = 'json'
+    data['iiprop'] = 'url'
+    url_values = urllib.parse.urlencode(data)
+    url = 'https://en.wikipedia.org/w/api.php'
+    full_url = url + '?' + url_values
+    
+    data = urlopen(full_url).read()
+    print(full_url)
+    image_data = json.loads(data.decode('utf-8'))
+
+    pages = image_data['query']['pages']
+    image_url = ''
+    for key in pages.keys():
+        image_url = pages[key]['imageinfo'][0]['url']
+    return image_url
+
+def main():
+    infobox_list = get_infobox()
+    for obj in infobox_list:
+        if '国旗画像' in obj.keys():
+            flag_name = obj['国旗画像']
+            flag_name = 'File:' + flag_name
+            print(flag_name)
+            flag_url  = image_url(flag_name)
+            print(flag_url)
+            
+if __name__ == '__main__':
+    main()    
